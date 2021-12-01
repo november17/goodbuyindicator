@@ -1,0 +1,82 @@
+// License {
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// }
+// THE COINHELL BROTHERS GOODBUY INDICATOR Version v1.0 beta {
+// VERSION HISTORY
+//v1.0 Basic structure and layout
+//
+// @version=5
+//}
+//
+//                      /$$           /$$  @coinhellbros  /$$ /$$       /$$   coinhell.wordpress.com           
+//                     |__/          | $$                | $$| $$      | $$                                    
+//   /$$$$$$$  /$$$$$$  /$$ /$$$$$$$ | $$$$$$$   /$$$$$$ | $$| $$      | $$$$$$$   /$$$$$$   /$$$$$$   /$$$$$$$
+//  /$$_____/ /$$__  $$| $$| $$__  $$| $$__  $$ /$$__  $$| $$| $$      | $$__  $$ /$$__  $$ /$$__  $$ /$$_____/
+// | $$      | $$  \ $$| $$| $$  \ $$| $$  \ $$| $$$$$$$$| $$| $$      | $$  \ $$| $$  \__/| $$  \ $$|  $$$$$$ 
+// | $$      | $$  | $$| $$| $$  | $$| $$  | $$| $$_____/| $$| $$      | $$  | $$| $$      | $$  | $$ \____  $$
+// |  $$$$$$$|  $$$$$$/| $$| $$  | $$| $$  | $$|  $$$$$$$| $$| $$      | $$$$$$$/| $$      |  $$$$$$/ /$$$$$$$/
+//  \_______/ \______/ |__/|__/  |__/|__/  |__/ \_______/|__/|__/      |_______/ |__/       \______/ |_______/ 
+//
+indicator(title="Coinhell Bros GoodBuy Indicator", shorttitle="Coinhell Indicator", format=format.price, precision=0, timeframe="", timeframe_gaps=true)
+//VARIABLES {
+periodK2 = input.int(14, title="Vanilla Stoch K Length", minval=1)
+smoothK2 = input.int(1, title="Vanilla Stoch K Smoothing", minval=1)
+hullPeriod = input.int(4, title="HullMA Period", minval=16)
+var cumVol = 0.
+cumVol += nz(volume)
+if barstate.islast and cumVol == 0
+    runtime.error("No volume is provided by the data vendor.")
+cShort = input.int(3, minval=1, title="Chaikin Fast Length")
+cLong = input.int(10, minval=1, title="Chaikin Slow Length")
+smoothK1 = input.int(3, "StochRSI K", minval=1)
+lengthRSI1 = input.int(2, "StochRSI Length", minval=1)
+lengthStoch1 = input.int(14, "StochRSI Stoch Length", minval=1)
+src = input(close, title="StochRSI Source")
+//}
+//CALCULATIONS {
+//Canilla RSI Calculation {
+k2 = ta.sma(ta.stoch(close, high, low, periodK2), smoothK2)
+vrsiScore = if k2 <= 17.5 //set variable vrsiScore and assign number
+    1
+else
+    0
+//}
+//StochRSI Calculation {
+rsi1 = ta.rsi(src, lengthRSI1)
+k1 = ta.sma(ta.stoch(rsi1, rsi1, rsi1, lengthStoch1), smoothK1)
+stochScore = if k1 <= 42 // set variable stochScore and assign number
+    1
+else
+    0
+//}
+//Chaikin AD Calculation {
+chaikOsc = ta.ema(ta.accdist, cShort) - ta.ema(ta.accdist, cLong)
+chaikScore = if chaikOsc <= 0 // set variable chaikScore and assign number
+    1
+else
+    0
+//}
+//Hull MA Calculation {
+n2ma=2*ta.wma(close,math.round(hullPeriod/2))
+nma=ta.wma(close,hullPeriod)
+diff=n2ma-nma
+sqn=math.round(math.sqrt(hullPeriod))
+n2ma1=2*ta.wma(close[1],math.round(hullPeriod/2))
+nma1=ta.wma(close[1],hullPeriod)
+diff1=n2ma1-nma1
+sqn1=math.round(math.sqrt(hullPeriod))
+//}
+//CBGI Score Calculation {
+cbgi = stochScore + vrsiScore + stochScore
+//}
+//}
+//PLOTTING ON CHART {
+//stochRSI
+//ot(k1, "StochRSI K", color=#2962FF)
+//vanilla RSI
+//ot(k2, title="Stochastic K", color=#EC407A)
+//chaikin
+//plot(chaikosc, title="Chaikin Oscillator", color=#EC407A)
+//general settings
+plot(cbgi, "Goodbuy Score", color=#2962FF)
+//}
