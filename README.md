@@ -1,2 +1,2 @@
-# goodbuyindicator
-Good Buy Indicator
+# Goodbuy Indicator
+This is written in Tradingview Pinescript version 5. 
