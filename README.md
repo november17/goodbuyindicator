@@ -1,0 +1,2 @@
+# goodbuyindicator
+Good Buy Indicator
